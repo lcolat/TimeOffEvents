@@ -59,9 +59,10 @@ module Logic =
            || ((request1.End.Date.CompareTo(request2.Start.Date) <= 0) && (request1.End.Date.CompareTo(request2.End.Date) >= 0)))
 
     let overlapsWithAnyRequest (otherRequests: TimeOffRequest seq) request =
-        false //TODO: write this function using overlapsWith
-
-    let createRequest activeUserRequests request day =
+        otherRequests
+        |> Seq.exists (overlapsWith request)             
+          
+    let createRequest activeUserRequests  request day =
         if request |> overlapsWithAnyRequest activeUserRequests then
             Error "Overlapping request"
         elif request.Start.Date <= day then
