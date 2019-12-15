@@ -87,8 +87,8 @@ let validationTests =
   ]
   
 [<Tests>]  
-let cancelTest =
-    testList "Cancel tests" [
+let cancelByUserTest =
+    testList "Cancel test by user" [
     test "A request is cancel" {
       let request = {
         UserId = "jdoe"
@@ -99,6 +99,23 @@ let cancelTest =
       Given [ RequestCreated request ]
       |> ConnectedAs (Employee "jdoe")
       |> When (CancelRequestByUser ("jdoe", request.RequestId))
-      |> Then (Ok [RequestCancelled request]) "The request should have been cancelled"
+      |> Then (Ok [RequestCancelledByUser request]) "The request should have been cancelled"
+    }
+  ]
+    
+[<Tests>]  
+let cancelByManagerTest =
+    testList "Cancel test by manager" [
+    test "A request is cancel" {
+      let request = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 27); HalfDay = PM } }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs Manager
+      |> When (CancelRequestByManager ("jdoe", request.RequestId))
+      |> Then (Ok [RequestCancelledByManager request]) "The request should have been cancelled"
     }
   ]
