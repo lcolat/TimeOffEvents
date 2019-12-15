@@ -119,3 +119,54 @@ let cancelByManagerTest =
       |> Then (Ok [RequestCancelledByManager request]) "The request should have been cancelled"
     }
   ]
+    
+[<Tests>]  
+let RefuseTest =
+    testList "Refuse test by manager" [
+    test "A request is refuse" {
+      let request = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 27); HalfDay = PM } }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs Manager
+      |> When (RefuseRequest ("jdoe", request.RequestId))
+      |> Then (Ok [RequestRefuse request]) "The request should have been refuse"
+    }
+  ]
+    
+[<Tests>]  
+let RequestCancelRequest =
+    testList "Request cancel test by manager" [
+    test "A request is request cancel" {
+      let request = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 27); HalfDay = PM } }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs (Employee "jdoe")
+      |> When (CancellRequestRequest ("jdoe", request.RequestId))
+      |> Then (Ok [RequestCancellRequest request]) "The request should have been request cancel"
+    }
+  ]
+    
+[<Tests>]  
+let RequestCancelRequestRefuse =
+    testList "Request cancel refuse test by manager" [
+    test "A request is request cancel and refuse" {
+      let request = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
+        End = { Date = DateTime(2019, 12, 27); HalfDay = PM } }
+
+      Given [ RequestCreated request ]
+      |> ConnectedAs Manager
+      |> When (CancellRequestRefuseRequest ("jdoe", request.RequestId))
+      |> Then (Ok [RequestCancellRequestRefuse request]) "The request should have been request cancel refuse"
+    }
+  ]    
