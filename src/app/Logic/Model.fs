@@ -1,6 +1,7 @@
 ﻿namespace TimeOff
 
 open System
+open System
 
 // Then our commands
 type Command =
@@ -11,6 +12,7 @@ type Command =
     | RefuseRequest of UserId * Guid
     | CancelRequestRequest of UserId * Guid
     | CancelRequestRefuseRequest of UserId * Guid
+    | GetTimeOff of TimeOffDay
     with
     member this.UserId =
         match this with
@@ -21,7 +23,7 @@ type Command =
         | RefuseRequest (userId, _) -> userId
         | CancelRequestRequest (userId, _) -> userId
         | CancelRequestRefuseRequest (userId, _) -> userId
-
+        | GetTimeOff request -> request.UserId
 // And our events
 type RequestEvent =
     | RequestCreated of TimeOffRequest
@@ -31,6 +33,7 @@ type RequestEvent =
     | RequestRefuse of TimeOffRequest
     | RequestCancelRequest of TimeOffRequest
     | RequestCancelRequestRefuse of TimeOffRequest
+    
     with
     member this.Request =
         match this with
@@ -41,7 +44,15 @@ type RequestEvent =
         | RequestRefuse request -> request
         | RequestCancelRequest request -> request
         | RequestCancelRequestRefuse request -> request
+        
 
+type TimeOffEvent =
+    | RequestGetTimeOff of TimeOffDay
+        with
+    member this.Request =
+        match this with
+        | RequestGetTimeOff request -> request
+        
 // We then define the state of the system,
 // and our 2 main functions `decide` and `evolve`
 module Logic =
@@ -151,7 +162,7 @@ module Logic =
         | Refuse request ->
             Ok [RequestCancelRequest request]
         | _ ->
-            Error "Request cannot be cancel"
+            Error "Request cannot be cancel"           
             
     let cancelRequestRefuse requestState =
         match requestState with
@@ -162,6 +173,54 @@ module Logic =
         | _ ->
             Error "Request cannot be cancel"
             
+    let getWeekendDay (dStart : DateTime) (dEnd : DateTime) =
+        let dayTotal = (float 0)
+        if dStart.DayOfWeek.Equals DayOfWeek.Saturday || dEnd.DayOfWeek.Equals DayOfWeek.Sunday then
+            dayTotal = dayTotal + 0.0
+        else
+            dayTotal = dayTotal + 1.0
+        dayTotal
+        
+    let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) =
+        let dayTotal = (float 0)
+        let dayWithoutWeekend = (float 0)
+        for d in userRequests do
+            if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) >= 0 then
+                dayWithoutWeekend = getWeekendDay d.Start.Date d.End.Date
+                dayTotal = dayTotal + dayWithoutWeekend - 1.0
+                if d.End.HalfDay = HalfDay.AM then
+                    dayTotal = dayTotal + 0.5
+                else
+                    dayTotal = dayTotal + 1.0
+                if d.Start.HalfDay = HalfDay.AM then
+                    dayTotal = dayTotal + 1.0
+                else
+                    dayTotal = dayTotal + 0.5
+            else
+                dayTotal = dayTotal
+        Ok [RequestGetTimeOff TimeOffDay]
+        
+    let getNumberDayAfterToday (userRequests : TimeOffRequest seq) =
+        let dayTotal = (float 0)
+        let dayWithoutWeekend = (float 0)
+        for d in userRequests do
+            if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) <= 0 then
+                dayWithoutWeekend = getWeekendDay d.Start.Date d.End.Date
+                dayTotal = dayTotal + dayWithoutWeekend - 1.0
+                if d.End.HalfDay = HalfDay.AM then
+                    dayTotal = dayTotal + 0.5
+                else
+                    dayTotal = dayTotal + 1.0
+                if d.Start.HalfDay = HalfDay.AM then
+                    dayTotal = dayTotal + 1.0
+                else
+                    dayTotal = dayTotal + 0.5
+            else
+                dayTotal = dayTotal
+        let timeOffDay = new TimeOffDay()
+        timeOffDay.Planned = dayTotal
+        Ok [RequestGetTimeOff TimeOffDay]
+        
     let decide (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId
         match user with
@@ -215,3 +274,16 @@ module Logic =
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     cancelRequestRefuse requestState
+            | GetTimeOff (TimeOffDay) ->
+                if user <> Employee(relatedUserId) then
+                    Error "Unauthorized"
+                else
+                    let activeUserRequests =
+                        userRequests
+                        |> Map.toSeq
+                        |> Seq.map (fun (_, state) -> state)
+                        |> Seq.where (fun state -> state.IsActive)
+                        |> Seq.map (fun state -> state.Request)
+                    
+                    Ok [RequestGetTimeOff TimeOffDay]
+                    getNumberDayBeforeToday activeUserRequests
