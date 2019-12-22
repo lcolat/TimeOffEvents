@@ -9,8 +9,8 @@ type Command =
     | CancelRequestByUser of UserId * Guid
     | CancelRequestByManager of UserId * Guid
     | RefuseRequest of UserId * Guid
-    | CancellRequestRequest of UserId * Guid
-    | CancellRequestRefuseRequest of UserId * Guid
+    | CancelRequestRequest of UserId * Guid
+    | CancelRequestRefuseRequest of UserId * Guid
     with
     member this.UserId =
         match this with
@@ -19,8 +19,8 @@ type Command =
         | CancelRequestByUser (userId, _) -> userId
         | CancelRequestByManager (userId, _) -> userId
         | RefuseRequest (userId, _) -> userId
-        | CancellRequestRequest (userId, _) -> userId
-        | CancellRequestRefuseRequest (userId, _) -> userId
+        | CancelRequestRequest (userId, _) -> userId
+        | CancelRequestRefuseRequest (userId, _) -> userId
 
 // And our events
 type RequestEvent =
@@ -29,8 +29,8 @@ type RequestEvent =
     | RequestCancelledByUser of TimeOffRequest
     | RequestCancelledByManager of TimeOffRequest
     | RequestRefuse of TimeOffRequest
-    | RequestCancellRequest of TimeOffRequest
-    | RequestCancellRequestRefuse of TimeOffRequest
+    | RequestCancelRequest of TimeOffRequest
+    | RequestCancelRequestRefuse of TimeOffRequest
     with
     member this.Request =
         match this with
@@ -39,8 +39,8 @@ type RequestEvent =
         | RequestCancelledByUser request -> request
         | RequestCancelledByManager request -> request
         | RequestRefuse request -> request
-        | RequestCancellRequest request -> request
-        | RequestCancellRequestRefuse request -> request
+        | RequestCancelRequest request -> request
+        | RequestCancelRequestRefuse request -> request
 
 // We then define the state of the system,
 // and our 2 main functions `decide` and `evolve`
@@ -53,8 +53,8 @@ module Logic =
         | CancelledByUser of TimeOffRequest
         | CancelledByManager of TimeOffRequest
         | Refuse of TimeOffRequest
-        | CancellRequest of TimeOffRequest
-        | CancellRequestRefuse of TimeOffRequest
+        | CancelRequest of TimeOffRequest
+        | CancelRequestRefuse of TimeOffRequest
         with
         member this.Request =
             match this with
@@ -63,15 +63,15 @@ module Logic =
             | Validated request
             | Refuse request
             | CancelledByManager request
-            | CancellRequest request
-            | CancellRequestRefuse request
+            | CancelRequest request
+            | CancelRequestRefuse request
             | CancelledByUser request -> request
         member this.IsActive =
             match this with
             | CancelledByUser _
             | CancelledByManager _
-            | CancellRequest _
-            | CancellRequestRefuse _
+            | CancelRequest _
+            | CancelRequestRefuse _
             | NotCreated -> false
             | PendingValidation _
             | Validated _ -> true
@@ -85,8 +85,8 @@ module Logic =
         | RequestCancelledByUser request -> CancelledByUser request
         | RequestCancelledByManager request -> CancelledByManager request
         | RequestRefuse request -> Refuse request
-        | RequestCancellRequest request -> CancellRequest request
-        | RequestCancellRequestRefuse request -> CancellRequestRefuse request
+        | RequestCancelRequest request -> CancelRequest request
+        | RequestCancelRequestRefuse request -> CancelRequestRefuse request
 
     let evolveUserRequests (userRequests: UserRequestsState) (event: RequestEvent) =
         let requestState = defaultArg (Map.tryFind event.Request.RequestId userRequests) NotCreated
@@ -144,21 +144,21 @@ module Logic =
         | _ ->
             Error "Request cannot be refuse"
             
-    let cancellRequest requestState =
+    let cancelRequest requestState =
         match requestState with
         | PendingValidation request ->
-            Ok [RequestCancellRequest request]
+            Ok [RequestCancelRequest request]
         | Refuse request ->
-            Ok [RequestCancellRequest request]
+            Ok [RequestCancelRequest request]
         | _ ->
             Error "Request cannot be cancel"
             
-    let cancellRequestRefuse requestState =
+    let cancelRequestRefuse requestState =
         match requestState with
         | PendingValidation request ->
-            Ok [RequestCancellRequestRefuse request]
+            Ok [RequestCancelRequestRefuse request]
         | Refuse request ->
-            Ok [RequestCancellRequestRefuse request]
+            Ok [RequestCancelRequestRefuse request]
         | _ ->
             Error "Request cannot be cancel"
             
@@ -203,15 +203,15 @@ module Logic =
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     refuseRequest requestState
-            | CancellRequestRequest (_, requestId) ->
+            | CancelRequestRequest (_, requestId) ->
                 if user <> Employee(relatedUserId) then
                     Error "Unauthorized"
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
-                    cancellRequest requestState
-            | CancellRequestRefuseRequest (_, requestId) ->
+                    cancelRequest requestState
+            | CancelRequestRefuseRequest (_, requestId) ->
                 if user <> Manager then
                     Error "Unauthorized"
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
-                    cancellRequestRefuse requestState
+                    cancelRequestRefuse requestState

@@ -149,8 +149,8 @@ let RequestCancelRequest =
 
       Given [ RequestCreated request ]
       |> ConnectedAs (Employee "jdoe")
-      |> When (CancellRequestRequest ("jdoe", request.RequestId))
-      |> Then (Ok [RequestCancellRequest request]) "The request should have been request cancel"
+      |> When (CancelRequestRequest ("jdoe", request.RequestId))
+      |> Then (Ok [RequestCancelRequest request]) "The request should have been request cancel"
     }
   ]
     
@@ -166,7 +166,7 @@ let RequestCancelRequestRefuse =
 
       Given [ RequestCreated request ]
       |> ConnectedAs Manager
-      |> When (CancellRequestRefuseRequest ("jdoe", request.RequestId))
-      |> Then (Ok [RequestCancellRequestRefuse request]) "The request should have been request cancel refuse"
+      |> When (CancelRequestRefuseRequest ("jdoe", request.RequestId))
+      |> Then (Ok [RequestCancelRequestRefuse request]) "The request should have been request cancel refuse"
     }
   ]    
