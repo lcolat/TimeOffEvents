@@ -217,10 +217,12 @@ module Logic =
                     dayTotal = dayTotal + 0.5
             else
                 dayTotal = dayTotal
-        let timeOffDay = new TimeOffDay()
         timeOffDay.Planned = dayTotal
-        Ok [RequestGetTimeOff TimeOffDay]
-        
+        Ok [RequestGetTimeOff timeOffDay]
+    
+    let GetAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =        
+        let timeOffDay:TimeOffDay = {UserId: userId; Portion: 2.0; CarriedFromLastYear : 2.0; TakenToDate : 2.0; Planned : 2.0; CurrentBalance : 2.0}
+        timeOffDay
     let decide (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId
         match user with
@@ -274,7 +276,9 @@ module Logic =
                 else
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     cancelRequestRefuse requestState
-            | GetTimeOff (TimeOffDay) ->
+            
+            match command with
+            | GetTimeOff(TimeOffDay) ->
                 if user <> Employee(relatedUserId) then
                     Error "Unauthorized"
                 else
@@ -284,6 +288,4 @@ module Logic =
                         |> Seq.map (fun (_, state) -> state)
                         |> Seq.where (fun state -> state.IsActive)
                         |> Seq.map (fun state -> state.Request)
-                    
-                    Ok [RequestGetTimeOff TimeOffDay]
-                    getNumberDayBeforeToday activeUserRequests
+                    getNumberDayBeforeToday activeUserRequests 

@@ -20,7 +20,6 @@ type Boundary = {
 [<CLIMutable>]
 type TimeOffDay = {
     UserId: UserId
-    RequestId: Guid
     Portion: float
     CarriedFromLastYear : float
     TakenToDate : float
