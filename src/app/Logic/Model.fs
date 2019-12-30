@@ -1,8 +1,6 @@
 ﻿namespace TimeOff
 
 open System
-open System
-
 // Then our commands
 type Command =
     | RequestTimeOff of TimeOffRequest
@@ -12,7 +10,6 @@ type Command =
     | RefuseRequest of UserId * Guid
     | CancelRequestRequest of UserId * Guid
     | CancelRequestRefuseRequest of UserId * Guid
-    | GetTimeOff of TimeOffDay
     with
     member this.UserId =
         match this with
@@ -23,7 +20,6 @@ type Command =
         | RefuseRequest (userId, _) -> userId
         | CancelRequestRequest (userId, _) -> userId
         | CancelRequestRefuseRequest (userId, _) -> userId
-        | GetTimeOff request -> request.UserId
 // And our events
 type RequestEvent =
     | RequestCreated of TimeOffRequest
@@ -44,14 +40,6 @@ type RequestEvent =
         | RequestRefuse request -> request
         | RequestCancelRequest request -> request
         | RequestCancelRequestRefuse request -> request
-        
-
-type TimeOffEvent =
-    | RequestGetTimeOff of TimeOffDay
-        with
-    member this.Request =
-        match this with
-        | RequestGetTimeOff request -> request
         
 // We then define the state of the system,
 // and our 2 main functions `decide` and `evolve`
@@ -198,7 +186,7 @@ module Logic =
                     dayTotal = dayTotal + 0.5
             else
                 dayTotal = dayTotal
-        Ok [RequestGetTimeOff TimeOffDay]
+        dayTotal
         
     let getNumberDayAfterToday (userRequests : TimeOffRequest seq) =
         let dayTotal = (float 0)
@@ -217,18 +205,22 @@ module Logic =
                     dayTotal = dayTotal + 0.5
             else
                 dayTotal = dayTotal
-        timeOffDay.Planned = dayTotal
-        Ok [RequestGetTimeOff timeOffDay]
+        dayTotal
     
     let GetAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =        
-        let timeOffDay:TimeOffDay = {UserId: userId; Portion: 2.0; CarriedFromLastYear : 2.0; TakenToDate : 2.0; Planned : 2.0; CurrentBalance : 2.0}
-        timeOffDay
+        let timeOffDay:TimeOffDay = {UserId= userId; Portion= 2.0; CarriedFromLastYear = 2.0; TakenToDate = 2.0; Planned = 2.0; CurrentBalance = 2.0}
+        timeOffDay.Planned = getNumberDayAfterToday userRequests
+        timeOffDay.TakenToDate = getNumberDayBeforeToday userRequests
+        timeOffDay.Portion = (float DateTime.Today.Month) * 2.5
+        timeOffDay.CarriedFromLastYear = 2.0
+        timeOffDay.CurrentBalance = timeOffDay.Portion + timeOffDay.CarriedFromLastYear - (timeOffDay.Planned + timeOffDay.TakenToDate)
+        
     let decide (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId
         match user with
         | Employee userId when userId <> relatedUserId ->
             Error "Unauthorized"
-        | _ ->
+        | _ ->                
             match command with
             | RequestTimeOff request ->
                 let activeUserRequests =
@@ -277,15 +269,3 @@ module Logic =
                     let requestState = defaultArg (userRequests.TryFind requestId) NotCreated
                     cancelRequestRefuse requestState
             
-            match command with
-            | GetTimeOff(TimeOffDay) ->
-                if user <> Employee(relatedUserId) then
-                    Error "Unauthorized"
-                else
-                    let activeUserRequests =
-                        userRequests
-                        |> Map.toSeq
-                        |> Seq.map (fun (_, state) -> state)
-                        |> Seq.where (fun state -> state.IsActive)
-                        |> Seq.map (fun state -> state.Request)
-                    getNumberDayBeforeToday activeUserRequests 
