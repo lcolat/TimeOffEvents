@@ -53,6 +53,17 @@ module HttpHandlers =
                     return! (BAD_REQUEST message) next ctx
             }
 
+    let getTimeOff (handleGetAllTimeOff: UserId -> Result<TimeOffDay, string>) (userId: String) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let u:UserId = userId
+                let result = handleGetAllTimeOff u
+                match result with
+                | Ok timeOffDay -> return! json timeOffDay next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
 // ---------------------------------
 // Web app
 // ---------------------------------
@@ -75,6 +86,12 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
         // Finally, return the result
         result
         
+    let handleGetAllTimeOff (user: User) (userId: UserId) =
+        let eventStream = eventStore.GetStream(userId)
+        let state = eventStream.ReadAll() |> Seq.fold Logic.evolveUserRequests Map.empty
+        let result = Logic.decideBis user userId state
+        result
+        
     choose [
         subRoute "/api"
             (choose [
@@ -84,6 +101,7 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                         choose [
                             POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
                             POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
+                            GET >=> routef  "/%s" (fun id -> HttpHandlers.getTimeOff (handleGetAllTimeOff user) id )                                 
                         ]
                     ))
             ])

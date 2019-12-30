@@ -1,6 +1,7 @@
 ﻿namespace TimeOff
 
 open System
+
 // Then our commands
 type Command =
     | RequestTimeOff of TimeOffRequest
@@ -214,6 +215,20 @@ module Logic =
         timeOffDay.Portion = (float DateTime.Today.Month) * 2.5
         timeOffDay.CarriedFromLastYear = 2.0
         timeOffDay.CurrentBalance = timeOffDay.Portion + timeOffDay.CarriedFromLastYear - (timeOffDay.Planned + timeOffDay.TakenToDate)
+        Ok timeOffDay
+    //TODO: Rename this method
+    let decideBis (user: User) (userId: UserId) (userRequests: UserRequestsState) =
+        match user with
+        | Employee userId when userId <> userId ->
+            Error "Unauthorized"
+        | _ ->
+            let activeUserRequests =
+                userRequests
+                |> Map.toSeq
+                |> Seq.map (fun (_, state) -> state)
+                |> Seq.where (fun state -> state.IsActive)
+                |> Seq.map (fun state -> state.Request)
+            GetAllTimeOff userId activeUserRequests
         
     let decide (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId
