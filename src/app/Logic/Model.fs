@@ -218,7 +218,7 @@ module Logic =
         ((float date.Month) - 1.0) * 2.5
     
     let GetAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =   
-        let portion = (float DateTime.Today.Month) * 2.5  
+        let portion = getTimeOffPortion DateTime.Today
         let carriedFromLastYear = 2.0   
         let takenToDate = getNumberDayBeforeToday userRequests
         let planned = getNumberDayAfterToday userRequests
