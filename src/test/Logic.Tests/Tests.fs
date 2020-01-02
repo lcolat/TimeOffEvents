@@ -52,6 +52,8 @@ let overlapTests =
     }
   ]
 
+let now = DateTime.Now
+
 [<Tests>]
 let creationTests =
   testList "Creation tests" [
@@ -59,8 +61,8 @@ let creationTests =
       let request = {
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
-        Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
-        End = { Date = DateTime(2019, 12, 27); HalfDay = PM } }
+        Start = { Date = now.AddDays(1.0); HalfDay = AM }
+        End = { Date = now.AddDays(1.0); HalfDay = PM } }
 
       Given [ ]
       |> ConnectedAs (Employee "jdoe")
@@ -169,4 +171,23 @@ let RequestCancelRequestRefuse =
       |> When (CancelRequestRefuseRequest ("jdoe", request.RequestId))
       |> Then (Ok [RequestCancelRequestRefuse request]) "The request should have been request cancel refuse"
     }
-  ]    
+  ]
+    
+[<Tests>]  
+let RequestGetWeekendDay =
+    testList "Request get weekend day" [
+    test "GetWeekendDay give weekend day" {
+      let DateS = DateTime(2020, 01, 02)
+      let DateE = DateTime(2020, 01, 08)
+      Expect.equal (Logic.getWeekendDay DateS DateE) 5.0 "GetWeekenDay send weekend day"
+    }
+  ]
+    
+[<Tests>]  
+let RequestGetPortion =
+    testList "Request get Portion" [
+    test "Portion give portion" {
+      let DateS = DateTime(2020, 04, 02)
+      Expect.equal (Logic.getTimeOffPortion DateS) 7.5 "Portion is ok"
+    }
+  ]      

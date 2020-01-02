@@ -163,62 +163,67 @@ module Logic =
             Error "Request cannot be cancel"
             
     let getWeekendDay (dStart : DateTime) (dEnd : DateTime) =
-        let dayTotal = (float 0)
-        if dStart.DayOfWeek.Equals DayOfWeek.Saturday || dEnd.DayOfWeek.Equals DayOfWeek.Sunday then
-            dayTotal = dayTotal + 0.0
-        else
-            dayTotal = dayTotal + 1.0
+        let mutable dayTotal = (float 0)
+        let d = (dEnd - dStart).Days
+        let mutable dateI = dStart 
+        let mutable i = 0
+        while i <= d  do
+            if dateI.DayOfWeek.Equals DayOfWeek.Saturday || dateI.DayOfWeek.Equals DayOfWeek.Sunday then
+                dayTotal <- dayTotal + 0.0
+            else
+                 dayTotal <- dayTotal + 1.0                 
+            i <- i + 1
+            dateI <- dateI.AddDays(1.0)
         dayTotal
         
     let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) =
-        let dayTotal = (float 0)
-        let dayWithoutWeekend = (float 0)
+        let mutable dayTotal = (float 0)
+        let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) >= 0 then
-                dayWithoutWeekend = getWeekendDay d.Start.Date d.End.Date
-                dayTotal = dayTotal + dayWithoutWeekend - 1.0
+                dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
+                dayTotal <- dayTotal + dayWithoutWeekend - 1.0
                 if d.End.HalfDay = HalfDay.AM then
-                    dayTotal = dayTotal + 0.5
+                    dayTotal <- dayTotal + 0.5
                 else
-                    dayTotal = dayTotal + 1.0
+                    dayTotal <- dayTotal + 1.0
                 if d.Start.HalfDay = HalfDay.AM then
-                    dayTotal = dayTotal + 1.0
+                    dayTotal <- dayTotal + 1.0
                 else
-                    dayTotal = dayTotal + 0.5
+                    dayTotal <- dayTotal + 0.5
             else
-                dayTotal = dayTotal
+                dayTotal <- dayTotal
         dayTotal
         
     let getNumberDayAfterToday (userRequests : TimeOffRequest seq) =
-        let dayTotal = (float 0)
-        let dayWithoutWeekend = (float 0)
+        let mutable dayTotal = (float 0)
+        let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) <= 0 then
-                dayWithoutWeekend = getWeekendDay d.Start.Date d.End.Date
-                dayTotal = dayTotal + dayWithoutWeekend - 1.0
+                dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
+                dayTotal <- dayTotal + dayWithoutWeekend - 1.0
                 if d.End.HalfDay = HalfDay.AM then
-                    dayTotal = dayTotal + 0.5
+                    dayTotal <- dayTotal + 0.5
                 else
-                    dayTotal = dayTotal + 1.0
+                    dayTotal <- dayTotal + 1.0
                 if d.Start.HalfDay = HalfDay.AM then
-                    dayTotal = dayTotal + 1.0
+                    dayTotal <- dayTotal + 1.0
                 else
-                    dayTotal = dayTotal + 0.5
+                    dayTotal <- dayTotal + 0.5
             else
-                dayTotal = dayTotal
+                dayTotal <- dayTotal
         dayTotal
     
     let getTimeOffPortion (date : DateTime) =
         ((float date.Month) - 1.0) * 2.5
     
-    let GetAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =        
-        let timeOffDay:TimeOffDay = {UserId= userId; Portion= 2.0; CarriedFromLastYear = 2.0; TakenToDate = 2.0; Planned = 2.0; CurrentBalance = 2.0}
-        timeOffDay.Planned = getNumberDayAfterToday userRequests
-        timeOffDay.TakenToDate = getNumberDayBeforeToday userRequests
-        timeOffDay.Portion = getTimeOffPortion DateTime.Today
-        timeOffDay.CarriedFromLastYear = 2.0
-        timeOffDay.CurrentBalance = timeOffDay.Portion + timeOffDay.CarriedFromLastYear - (timeOffDay.Planned + timeOffDay.TakenToDate)
-        Ok timeOffDay
+    let GetAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =   
+        let portion = (float DateTime.Today.Month) * 2.5  
+        let carriedFromLastYear = 2.0   
+        let takenToDate = getNumberDayBeforeToday userRequests
+        let planned = getNumberDayAfterToday userRequests
+        let currentBalance = portion + carriedFromLastYear - (planned + takenToDate)
+        Ok {UserId= userId; Portion= portion; CarriedFromLastYear = carriedFromLastYear; TakenToDate = takenToDate; Planned = planned; CurrentBalance = currentBalance}
     //TODO: Rename this method
     let decideBis (user: User) (userId: UserId) (userRequests: UserRequestsState) =
         match user with
