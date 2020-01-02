@@ -176,7 +176,7 @@ module Logic =
             dateI <- dateI.AddDays(1.0)
         dayTotal
         
-    let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) =
+    let getNumberDayAfterToday (userRequests : TimeOffRequest seq) =
         let mutable dayTotal = (float 0)
         let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
@@ -193,9 +193,9 @@ module Logic =
                     dayTotal <- dayTotal + 0.5
             else
                 dayTotal <- dayTotal
-        dayTotal
+        dayTotal - 1.0
         
-    let getNumberDayAfterToday (userRequests : TimeOffRequest seq) =
+    let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) =
         let mutable dayTotal = (float 0)
         let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
@@ -212,7 +212,7 @@ module Logic =
                     dayTotal <- dayTotal + 0.5
             else
                 dayTotal <- dayTotal
-        dayTotal
+        dayTotal - 1.0
     
     let getTimeOffPortion (date : DateTime) =
         ((float date.Month) - 1.0) * 2.5
