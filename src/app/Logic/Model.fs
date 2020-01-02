@@ -182,7 +182,7 @@ module Logic =
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) >= 0 then
                 dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
-                dayTotal <- dayTotal + dayWithoutWeekend - 1.0
+                dayTotal <- dayTotal + dayWithoutWeekend - 2.0
                 if d.End.HalfDay = HalfDay.AM then
                     dayTotal <- dayTotal + 0.5
                 else
@@ -193,7 +193,7 @@ module Logic =
                     dayTotal <- dayTotal + 0.5
             else
                 dayTotal <- dayTotal
-        dayTotal - 1.0
+        dayTotal
         
     let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) =
         let mutable dayTotal = (float 0)
@@ -201,7 +201,7 @@ module Logic =
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) <= 0 then
                 dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
-                dayTotal <- dayTotal + dayWithoutWeekend - 1.0
+                dayTotal <- dayTotal + dayWithoutWeekend - 2.0
                 if d.End.HalfDay = HalfDay.AM then
                     dayTotal <- dayTotal + 0.5
                 else
@@ -212,7 +212,7 @@ module Logic =
                     dayTotal <- dayTotal + 0.5
             else
                 dayTotal <- dayTotal
-        dayTotal - 1.0
+        dayTotal
     
     let getTimeOffPortion (date : DateTime) =
         ((float date.Month) - 1.0) * 2.5
