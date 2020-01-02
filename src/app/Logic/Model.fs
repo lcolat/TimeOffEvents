@@ -208,11 +208,14 @@ module Logic =
                 dayTotal = dayTotal
         dayTotal
     
+    let getTimeOffPortion (date : DateTime) =
+        ((float date.Month) - 1.0) * 2.5
+    
     let GetAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =        
         let timeOffDay:TimeOffDay = {UserId= userId; Portion= 2.0; CarriedFromLastYear = 2.0; TakenToDate = 2.0; Planned = 2.0; CurrentBalance = 2.0}
         timeOffDay.Planned = getNumberDayAfterToday userRequests
         timeOffDay.TakenToDate = getNumberDayBeforeToday userRequests
-        timeOffDay.Portion = (float DateTime.Today.Month) * 2.5
+        timeOffDay.Portion = getTimeOffPortion DateTime.Today
         timeOffDay.CarriedFromLastYear = 2.0
         timeOffDay.CurrentBalance = timeOffDay.Portion + timeOffDay.CarriedFromLastYear - (timeOffDay.Planned + timeOffDay.TakenToDate)
         Ok timeOffDay
