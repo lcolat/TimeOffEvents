@@ -1,6 +1,7 @@
 ﻿namespace TimeOff
 
 open System
+open System
 
 // Then our commands
 type Command =
@@ -182,7 +183,7 @@ module Logic =
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) >= 0 then
                 dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
-                dayTotal <- dayTotal + dayWithoutWeekend - 2.0
+                dayTotal <- dayTotal + dayWithoutWeekend - 1.0
                 if d.End.HalfDay = HalfDay.AM then
                     dayTotal <- dayTotal + 0.5
                 else
@@ -193,7 +194,7 @@ module Logic =
                     dayTotal <- dayTotal + 0.5
             else
                 dayTotal <- dayTotal
-        dayTotal
+        dayTotal - 1.0
         
     let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) =
         let mutable dayTotal = (float 0)
@@ -201,7 +202,7 @@ module Logic =
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) <= 0 then
                 dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
-                dayTotal <- dayTotal + dayWithoutWeekend - 2.0
+                dayTotal <- dayTotal + dayWithoutWeekend - 1.0
                 if d.End.HalfDay = HalfDay.AM then
                     dayTotal <- dayTotal + 0.5
                 else
@@ -212,12 +213,12 @@ module Logic =
                     dayTotal <- dayTotal + 0.5
             else
                 dayTotal <- dayTotal
-        dayTotal
+        dayTotal - 1.0
     
     let getTimeOffPortion (date : DateTime) =
         ((float date.Month) - 1.0) * 2.5
     
-    let GetAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =   
+    let getAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =   
         let portion = getTimeOffPortion DateTime.Today
         let carriedFromLastYear = 2.0   
         let takenToDate = getNumberDayBeforeToday userRequests
@@ -236,7 +237,7 @@ module Logic =
                 |> Seq.map (fun (_, state) -> state)
                 |> Seq.where (fun state -> state.IsActive)
                 |> Seq.map (fun state -> state.Request)
-            GetAllTimeOff userId activeUserRequests
+            getAllTimeOff userId activeUserRequests
         
     let decide (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId

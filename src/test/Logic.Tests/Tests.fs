@@ -190,4 +190,73 @@ let RequestGetPortion =
       let DateS = DateTime(2020, 04, 02)
       Expect.equal (Logic.getTimeOffPortion DateS) 7.5 "Portion is ok"
     }
-  ]      
+  ]
+    
+[<Tests>]  
+let RequestGetTakeToDate =
+    testList "Request get Take to date" [
+    test "Requests on 2 distinct days for take to date" {
+      let request1 = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 03); HalfDay = PM }
+      }
+
+      let request2 = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 06); HalfDay = PM }
+      }
+      let array = [|request1;request2|]
+      let sequence = array :> seq<TimeOffRequest>
+      Expect.equal (Logic.getNumberDayBeforeToday sequence) 1.0 "TakenToDate is ok"
+    }
+  ]
+    
+[<Tests>]  
+let RequestGetPlanned =
+    testList "Request get Planned" [
+    test "Requests on 2 distinct days for planned" {
+      let request1 = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 03); HalfDay = PM }
+      }
+
+      let request2 = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 06); HalfDay = PM }
+      }
+      let array = [|request1;request2|]
+      let sequence = array :> seq<TimeOffRequest>
+      Expect.equal (Logic.getNumberDayBeforeToday sequence) 1.0 "planned is ok"
+    }
+  ]
+    
+[<Tests>]  
+let RequestGetAllTimeOff =
+    testList "Request get All timeoff" [
+    test "Requests on 2 distinct days for all time off" {
+      let request1 = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 03); HalfDay = PM }
+      }
+
+      let request2 = {
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 06); HalfDay = PM }
+      }
+      let array = [|request1;request2|]
+      let sequence = array :> seq<TimeOffRequest>
+      Expect.equal (Logic.getAllTimeOff request1.UserId sequence) 2.0 "all timeoff is ok"
+    }
+  ] 
