@@ -191,7 +191,7 @@ let RequestGetWeekendDay =
     test "GetWeekendDay give weekend day" {
       let DateS = DateTime(2020, 01, 02)
       let DateE = DateTime(2020, 01, 08)
-      Expect.equal (Logic.getWeekendDay DateS DateE) 5.0 "GetWeekenDay send weekend day"
+      Expect.equal (Logic.getDayWithoutWeekend DateS DateE) 5.0 "GetWeekenDay send weekend day"
     }
   ]
     
