@@ -53,6 +53,69 @@ module HttpHandlers =
                     return! (BAD_REQUEST message) next ctx
             }
             
+    let cancelRequestByUser (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = CancelRequestByUser (userAndRequestId.UserId, userAndRequestId.RequestId)
+                let result = handleCommand command
+                match result with
+                | Ok [RequestCancelledByUser timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+            
+    let cancelRequestByManager (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = CancelRequestByManager (userAndRequestId.UserId, userAndRequestId.RequestId)
+                let result = handleCommand command
+                match result with
+                | Ok [RequestCancelledByManager timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+    let refuseRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = RefuseRequest (userAndRequestId.UserId, userAndRequestId.RequestId)
+                let result = handleCommand command
+                match result with
+                | Ok [RequestRefuse timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+            
+    let cancelRequest (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = CancelRequestRequest (userAndRequestId.UserId, userAndRequestId.RequestId)
+                let result = handleCommand command
+                match result with
+                | Ok [RequestCancelRequest timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+    let cancelRequestRefuse (handleCommand: Command -> Result<RequestEvent list, string>) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let userAndRequestId = ctx.BindQueryString<UserAndRequestId>()
+                let command = CancelRequestRefuseRequest (userAndRequestId.UserId, userAndRequestId.RequestId)
+                let result = handleCommand command
+                match result with
+                | Ok [RequestCancelRequestRefuse timeOffRequest] -> return! json timeOffRequest next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+            
     let getAllRequests (handleGetAllRequests: UserId -> Result<List<TimeOffRequestHistory>, string>) (userId: String) =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -118,8 +181,13 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
                             GET >=> routef "/requests/%s" (fun userId -> HttpHandlers.getAllRequests (handleGetAllRequests user) userId )
-                            POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
+                            POST >=> route "/requests" >=> HttpHandlers.requestTimeOff (handleCommand user)
                             POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
+                            POST >=> route "/cancel-request-by-user" >=> HttpHandlers.cancelRequestByUser (handleCommand user)
+                            POST >=> route "/cancel-request-by-manager" >=> HttpHandlers.cancelRequestByManager (handleCommand user)
+                            POST >=> route "/refuse-request" >=> HttpHandlers.refuseRequest (handleCommand user)
+                            POST >=> route "/cancel-request" >=> HttpHandlers.cancelRequest (handleCommand user)
+                            POST >=> route "/cancel-request-refuse" >=> HttpHandlers.cancelRequestRefuse (handleCommand user)
                             GET >=> routef  "/%s" (fun id -> HttpHandlers.getTimeOff (handleGetAllTimeOff user) id )                                 
                         ]
                     ))
