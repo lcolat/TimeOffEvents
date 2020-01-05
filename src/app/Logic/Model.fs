@@ -174,7 +174,7 @@ module Logic =
         | _ ->
             Error "Request cannot be cancel"
             
-    let getWeekendDay (dStart : DateTime) (dEnd : DateTime) =
+    let getDayWithoutWeekend (dStart : DateTime) (dEnd : DateTime) =
         let mutable dayTotal = (float 0)
         let d = (dEnd - dStart).Days
         let mutable dateI = dStart 
@@ -193,7 +193,7 @@ module Logic =
         let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) >= 0 then
-                dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
+                dayWithoutWeekend <- getDayWithoutWeekend d.Start.Date d.End.Date
                 dayTotal <- dayTotal + dayWithoutWeekend - 1.0
                 if d.End.HalfDay = HalfDay.AM then
                     dayTotal <- dayTotal + 0.5
@@ -212,7 +212,7 @@ module Logic =
         let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
             if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) <= 0 then
-                dayWithoutWeekend <- getWeekendDay d.Start.Date d.End.Date
+                dayWithoutWeekend <- getDayWithoutWeekend d.Start.Date d.End.Date
                 dayTotal <- dayTotal + dayWithoutWeekend - 1.0
                 if d.End.HalfDay = HalfDay.AM then
                     dayTotal <- dayTotal + 0.5
@@ -272,7 +272,7 @@ module Logic =
             Date= event.Request.UpdateDate;
             From= event.Request.Start;
             To= event.Request.End;
-            Days= getWeekendDay event.Request.Start.Date event.Request.End.Date;
+            Days= getDayWithoutWeekend event.Request.Start.Date event.Request.End.Date;
             Event= eventString
         }]
         
