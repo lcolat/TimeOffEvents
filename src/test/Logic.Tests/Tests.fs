@@ -23,7 +23,9 @@ open System
 let overlapTests = 
   testList "Overlap tests" [
     test "A request overlaps with itself" {
+      let now = DateTime.Now
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 10, 1); HalfDay = AM }
@@ -34,7 +36,9 @@ let overlapTests =
     }
 
     test "Requests on 2 distinct days don't overlap" {
+      let now = DateTime.Now
       let request1 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 10, 1); HalfDay = AM }
@@ -42,6 +46,7 @@ let overlapTests =
       }
 
       let request2 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 10, 2); HalfDay = AM }
@@ -59,6 +64,7 @@ let creationTests =
   testList "Creation tests" [
     test "A request is created" {
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = now.AddDays(1.0); HalfDay = AM }
@@ -76,6 +82,7 @@ let validationTests =
   testList "Validation tests" [
     test "A request is validated" {
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
@@ -93,6 +100,7 @@ let cancelByUserTest =
     testList "Cancel test by user" [
     test "A request is cancel" {
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
@@ -110,6 +118,7 @@ let cancelByManagerTest =
     testList "Cancel test by manager" [
     test "A request is cancel" {
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
@@ -127,6 +136,7 @@ let RefuseTest =
     testList "Refuse test by manager" [
     test "A request is refuse" {
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
@@ -144,6 +154,7 @@ let RequestCancelRequest =
     testList "Request cancel test by manager" [
     test "A request is request cancel" {
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
@@ -161,6 +172,7 @@ let RequestCancelRequestRefuse =
     testList "Request cancel refuse test by manager" [
     test "A request is request cancel and refuse" {
       let request = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2019, 12, 27); HalfDay = AM }
@@ -196,7 +208,9 @@ let RequestGetPortion =
 let RequestGetTakeToDate =
     testList "Request get Take to date" [
     test "Requests on 2 distinct days for take to date" {
+      let now = DateTime.Now
       let request1 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
@@ -204,6 +218,7 @@ let RequestGetTakeToDate =
       }
 
       let request2 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
@@ -220,6 +235,7 @@ let RequestGetPlanned =
     testList "Request get Planned" [
     test "Requests on 2 distinct days for planned" {
       let request1 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
@@ -227,6 +243,7 @@ let RequestGetPlanned =
       }
 
       let request2 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
@@ -243,6 +260,7 @@ let RequestGetAllTimeOff =
     testList "Request get All timeoff" [
     test "Requests on 2 distinct days for all time off" {
       let request1 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
@@ -250,6 +268,7 @@ let RequestGetAllTimeOff =
       }
 
       let request2 = {
+        UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
         Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
@@ -257,6 +276,6 @@ let RequestGetAllTimeOff =
       }
       let array = [|request1;request2|]
       let sequence = array :> seq<TimeOffRequest>
-      Expect.equal (Logic.getAllTimeOff request1.UserId sequence) 2.0 "all timeoff is ok"
+      Expect.equal (Logic.getAllTimeOff request1.UserId sequence) (Ok {UserId= "jdoe"; Portion= 0.0; CarriedFromLastYear = 2.0; TakenToDate = 1.0; Planned = 1.0; CurrentBalance = 0.0}) "all timeoff is ok"
     }
   ] 
