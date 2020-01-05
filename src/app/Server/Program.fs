@@ -52,7 +52,19 @@ module HttpHandlers =
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
             }
-
+            
+    let getAllRequests (handleGetAllRequests: UserId -> Result<List<TimeOffRequestHistory>, string>) (userId: String) =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let u:UserId = userId
+                let result = handleGetAllRequests u
+                match result with
+                | Ok timeOffDay -> return! json timeOffDay next ctx
+                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Error message ->
+                    return! (BAD_REQUEST message) next ctx
+            }
+            
     let getTimeOff (handleGetAllTimeOff: UserId -> Result<TimeOffDay, string>) (userId: String) =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -86,6 +98,12 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
         // Finally, return the result
         result
         
+    let handleGetAllRequests (user: User) (userId: UserId) =
+        let eventStream = eventStore.GetStream(userId)
+        let state = eventStream.ReadAll() |> Seq.fold Logic.mapHistory List.empty
+        let result = Logic.getAllRequests user userId state
+        result
+        
     let handleGetAllTimeOff (user: User) (userId: UserId) =
         let eventStream = eventStore.GetStream(userId)
         let state = eventStream.ReadAll() |> Seq.fold Logic.evolveUserRequests Map.empty
@@ -99,6 +117,7 @@ let webApp (eventStore: IStore<UserId, RequestEvent>) =
                 subRoute "/timeoff"
                     (Auth.Handlers.requiresJwtTokenForAPI (fun user ->
                         choose [
+                            GET >=> routef "/requests/%s" (fun userId -> HttpHandlers.getAllRequests (handleGetAllRequests user) userId )
                             POST >=> route "/request" >=> HttpHandlers.requestTimeOff (handleCommand user)
                             POST >=> route "/validate-request" >=> HttpHandlers.validateRequest (handleCommand user)
                             GET >=> routef  "/%s" (fun id -> HttpHandlers.getTimeOff (handleGetAllTimeOff user) id )                                 

@@ -18,6 +18,15 @@ type Boundary = {
 }
 
 [<CLIMutable>]
+type TimeOffRequestHistory = {
+    Date: DateTime
+    From: Boundary
+    To: Boundary
+    Days: float
+    Event: string
+}
+
+[<CLIMutable>]
 type TimeOffDay = {
     UserId: UserId
     Portion: float
@@ -33,6 +42,7 @@ type TimeOffRequest = {
     RequestId: Guid
     Start: Boundary
     End: Boundary
+    mutable UpdateDate: DateTime
 }
 
 

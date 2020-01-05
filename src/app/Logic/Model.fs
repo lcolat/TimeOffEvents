@@ -1,7 +1,6 @@
 ﻿namespace TimeOff
 
 open System
-open System
 
 // Then our commands
 type Command =
@@ -93,7 +92,7 @@ module Logic =
         let requestState = defaultArg (Map.tryFind event.Request.RequestId userRequests) NotCreated
         let newRequestState = evolveRequest requestState event
         userRequests.Add (event.Request.RequestId, newRequestState)
-
+    
     let overlapsWith request1 request2 =
        request1.UserId.Equals(request2.UserId) &&
        (((request1.Start.Date.CompareTo(request2.Start.Date) <= 0) && (request1.Start.Date.CompareTo(request2.End.Date) >= 0))
@@ -109,11 +108,13 @@ module Logic =
         elif request.Start.Date <= day then
             Error "The request starts in the past"
         else
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCreated request]
 
     let validateRequest requestState =
         match requestState with
         | PendingValidation request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestValidated request]
         | _ ->
             Error "Request cannot be validated"
@@ -121,8 +122,10 @@ module Logic =
     let cancelRequestByUser requestState =
         match requestState with
         | PendingValidation request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelledByUser request]
         | Validated request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelledByUser request]
         | _ ->
             Error "Request cannot be cancel"
@@ -130,8 +133,10 @@ module Logic =
     let cancelRequestByManager requestState =
         match requestState with
         | PendingValidation request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelledByManager request]
         | Validated request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelledByManager request]
         | _ ->
             Error "Request cannot be cancel"
@@ -139,8 +144,10 @@ module Logic =
     let refuseRequest requestState =
         match requestState with
         | PendingValidation request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestRefuse request]
         | Refuse request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestRefuse request]
         | _ ->
             Error "Request cannot be refuse"
@@ -148,8 +155,10 @@ module Logic =
     let cancelRequest requestState =
         match requestState with
         | PendingValidation request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelRequest request]
         | Refuse request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelRequest request]
         | _ ->
             Error "Request cannot be cancel"           
@@ -157,8 +166,10 @@ module Logic =
     let cancelRequestRefuse requestState =
         match requestState with
         | PendingValidation request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelRequestRefuse request]
         | Refuse request ->
+            request.UpdateDate <- DateTime.Now
             Ok [RequestCancelRequestRefuse request]
         | _ ->
             Error "Request cannot be cancel"
@@ -238,6 +249,33 @@ module Logic =
                 |> Seq.where (fun state -> state.IsActive)
                 |> Seq.map (fun state -> state.Request)
             getAllTimeOff userId activeUserRequests
+    let getAllRequests (user: User) (userId: UserId) (userRequests: List<TimeOffRequestHistory>) =
+        match user with
+        | Employee userId when userId <> userId ->
+            Error "Unauthorized"
+        | _ ->
+            Ok userRequests
+
+    let eventToString event =
+        match event with
+        | RequestCreated request -> "Pending validation"
+        | RequestValidated request -> "Validated"
+        | RequestCancelledByUser request -> "Cancelled by user"
+        | RequestCancelledByManager request -> "Cancelled by manager"
+        | RequestRefuse request -> "Refuse"
+        | RequestCancelRequest request -> "Cancel Request"
+        | RequestCancelRequestRefuse request -> "Cancel request refuse"
+    
+    let mapHistory (history: List<TimeOffRequestHistory>) (event: RequestEvent) =
+        let eventString = eventToString event
+        history @ [{
+            Date= event.Request.UpdateDate;
+            From= event.Request.Start;
+            To= event.Request.End;
+            Days= getWeekendDay event.Request.Start.Date event.Request.End.Date;
+            Event= eventString
+        }]
+        
         
     let decide (userRequests: UserRequestsState) (user: User) (command: Command) =
         let relatedUserId = command.UserId
