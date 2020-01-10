@@ -216,17 +216,23 @@ let RequestGetTakeToDate =
         Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
         End = { Date = DateTime(2020, 01, 03); HalfDay = PM }
       }
-
       let request2 = {
         UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
-        Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
-        End = { Date = DateTime(2020, 01, 06); HalfDay = PM }
+        Start = { Date = DateTime(2020, 01, 08); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 08); HalfDay = PM }
       }
-      let array = [|request1;request2|]
+      let request3 = {
+        UpdateDate = now
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 06, 05); HalfDay = AM }
+        End = { Date = DateTime(2020, 06, 05); HalfDay = PM }
+      }
+      let array = [|request1;request2;request3|]
       let sequence = array :> seq<TimeOffRequest>
-      Expect.equal (Logic.getNumberDayBeforeToday sequence) 1.0 "TakenToDate is ok"
+      Expect.equal (Logic.getNumberDayBeforeToday sequence) 2.0 "TakenToDate is ok"
     }
   ]
     
@@ -241,17 +247,23 @@ let RequestGetPlanned =
         Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
         End = { Date = DateTime(2020, 01, 03); HalfDay = PM }
       }
-
       let request2 = {
         UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
-        Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
-        End = { Date = DateTime(2020, 01, 06); HalfDay = PM }
+        Start = { Date = DateTime(2020, 01, 17); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 17); HalfDay = PM }
       }
-      let array = [|request1;request2|]
+      let request3 = {
+        UpdateDate = now
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 06, 05); HalfDay = AM }
+        End = { Date = DateTime(2020, 06, 05); HalfDay = PM }
+      }
+      let array = [|request1;request2;request3|]
       let sequence = array :> seq<TimeOffRequest>
-      Expect.equal (Logic.getNumberDayBeforeToday sequence) 1.0 "planned is ok"
+      Expect.equal (Logic.getNumberDayAfterToday sequence) 2.0 "planned is ok"
     }
   ]
     
@@ -266,16 +278,22 @@ let RequestGetAllTimeOff =
         Start = { Date = DateTime(2020, 01, 03); HalfDay = AM }
         End = { Date = DateTime(2020, 01, 03); HalfDay = PM }
       }
-
       let request2 = {
         UpdateDate = now
         UserId = "jdoe"
         RequestId = Guid.NewGuid()
-        Start = { Date = DateTime(2020, 01, 06); HalfDay = AM }
-        End = { Date = DateTime(2020, 01, 06); HalfDay = PM }
+        Start = { Date = DateTime(2020, 01, 17); HalfDay = AM }
+        End = { Date = DateTime(2020, 01, 17); HalfDay = PM }
       }
-      let array = [|request1;request2|]
+      let request3 = {
+        UpdateDate = now
+        UserId = "jdoe"
+        RequestId = Guid.NewGuid()
+        Start = { Date = DateTime(2020, 06, 05); HalfDay = AM }
+        End = { Date = DateTime(2020, 06, 05); HalfDay = PM }
+      }   
+      let array = [|request1;request2;request3|]
       let sequence = array :> seq<TimeOffRequest>
-      Expect.equal (Logic.getAllTimeOff request1.UserId sequence) (Ok {UserId= "jdoe"; Portion= 0.0; CarriedFromLastYear = 2.0; TakenToDate = 1.0; Planned = 1.0; CurrentBalance = 0.0}) "all timeoff is ok"
+      Expect.equal (Logic.getAllTimeOff request1.UserId sequence) (Ok {UserId= "jdoe"; Portion= 0.0; CarriedFromLastYear = 3.0; TakenToDate = 1.0; Planned = 2.0; CurrentBalance = 0.0}) "all timeoff is ok"
     }
   ] 
