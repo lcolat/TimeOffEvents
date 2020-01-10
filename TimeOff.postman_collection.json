@@ -1,0 +1,250 @@
+{
+	"info": {
+		"_postman_id": "0ebfb15c-9abe-4cb2-b94f-60b44258ccd5",
+		"name": "TimeOff",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "26fa2fb8-8970-4e48-876f-e2bbe59a3a03",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"UserName\":\"manager\",\"Password\":\"manager\"}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/users/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"users",
+						"login"
+					]
+				},
+				"description": "Login"
+			},
+			"response": []
+		},
+		{
+			"name": "RequestTimeOff",
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "key",
+							"value": "Authorization",
+							"type": "string"
+						},
+						{
+							"key": "value",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.Zi8LvT2W9i69OiWdIrRyZYEF6LMPvd1-XnxWorJy-f7-vV4D_pyxJ0HPRnVxufwBzMIPQtEaM1HAIZnaeBzzBHeymHyugGQu.IIuNLneXhsn27MucjBv9Kw.mv5Ku6BCud0jfwmT1cbu1HdPwc6Sh185CzFMu7ZIxzLiYSvpUpIfWBwsnWuMvcudj-D0kcrrS4-CTl6T1izOhQ.uLUcYaKwxYJVfkRbrVMZGx2QlUexjKxhfCGHlzRXuyA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"employee1\",\n    \"requestId\": \"f1511bdc-5008-4d99-899f-cfef79cd0538\",\n    \"start\": {\n        \"date\": \"2020-02-01T00:00:00\",\n        \"HalfDay\": {\n            \"case\": \"AM\"\n        }\n    },\n    \"End\": {\n        \"date\": \"2020-02-01T00:00:00\",\n        \"HalfDay\": {\n            \"Case\": \"PM\"\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/requests",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"requests"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ValidateRequest",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.lisKtC-LYTAw2fqzr9B7pxZpJEcW_uMWq4diXZPWYxQItWf1HHODKNITnBOeXCfmcSPHJ7w3tDK7P54vV-fp5SyJFIoL54Sa.7ntUfnWJf3c_cwXqI5jAOA.S7OpaoMOWOBE5TSuEOYKTf5Ce1U8UuwClIRbI7aS_s2mMHkgY9aZ264b_KS9NV7m5Uf_s5EPxZEVM3eCxuWpgg.8BJzGcWofh3V04ZS89KIZAGi1kheKGqfR9V7cUqXI1A",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/validate-request?UserId=employee1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0538",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"validate-request"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "employee1"
+						},
+						{
+							"key": "RequestId",
+							"value": "f1511bdc-5008-4d99-899f-cfef79cd0538"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllRequestHistory",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.Zi8LvT2W9i69OiWdIrRyZYEF6LMPvd1-XnxWorJy-f7-vV4D_pyxJ0HPRnVxufwBzMIPQtEaM1HAIZnaeBzzBHeymHyugGQu.IIuNLneXhsn27MucjBv9Kw.mv5Ku6BCud0jfwmT1cbu1HdPwc6Sh185CzFMu7ZIxzLiYSvpUpIfWBwsnWuMvcudj-D0kcrrS4-CTl6T1izOhQ.uLUcYaKwxYJVfkRbrVMZGx2QlUexjKxhfCGHlzRXuyA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/requests/employee1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"requests",
+						"employee1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TimeOff",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.Zi8LvT2W9i69OiWdIrRyZYEF6LMPvd1-XnxWorJy-f7-vV4D_pyxJ0HPRnVxufwBzMIPQtEaM1HAIZnaeBzzBHeymHyugGQu.IIuNLneXhsn27MucjBv9Kw.mv5Ku6BCud0jfwmT1cbu1HdPwc6Sh185CzFMu7ZIxzLiYSvpUpIfWBwsnWuMvcudj-D0kcrrS4-CTl6T1izOhQ.uLUcYaKwxYJVfkRbrVMZGx2QlUexjKxhfCGHlzRXuyA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/employee1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"employee1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel request by user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJBMjU2S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIn0.Zi8LvT2W9i69OiWdIrRyZYEF6LMPvd1-XnxWorJy-f7-vV4D_pyxJ0HPRnVxufwBzMIPQtEaM1HAIZnaeBzzBHeymHyugGQu.IIuNLneXhsn27MucjBv9Kw.mv5Ku6BCud0jfwmT1cbu1HdPwc6Sh185CzFMu7ZIxzLiYSvpUpIfWBwsnWuMvcudj-D0kcrrS4-CTl6T1izOhQ.uLUcYaKwxYJVfkRbrVMZGx2QlUexjKxhfCGHlzRXuyA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/timeoff/cancel-request-by-user?UserId=employee1&RequestId=f1511bdc-5008-4d99-899f-cfef79cd0539",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"timeoff",
+						"cancel-request-by-user"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "employee1"
+						},
+						{
+							"key": "RequestId",
+							"value": "f1511bdc-5008-4d99-899f-cfef79cd0539"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
