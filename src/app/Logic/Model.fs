@@ -188,11 +188,11 @@ module Logic =
             dateI <- dateI.AddDays(1.0)
         dayTotal
         
-    let getNumberDayAfterToday (userRequests : TimeOffRequest seq) =
+    let getNumberDayAfterToday (userRequests : TimeOffRequest seq) (today: DateTime)=
         let mutable dayTotal = (float 0)
         let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
-            if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) >= 0 then
+            if d.Start.Date.Year = today.Year &&  d.Start.Date.CompareTo(today) >= 0 then
                 dayWithoutWeekend <- getDayWithoutWeekend d.Start.Date d.End.Date              
                 dayTotal <- dayTotal + dayWithoutWeekend - 2.0
                 if d.End.HalfDay = HalfDay.AM then
@@ -207,11 +207,11 @@ module Logic =
                 dayTotal <- dayTotal
         dayTotal
         
-    let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) =
+    let getNumberDayBeforeToday (userRequests : TimeOffRequest seq) (today: DateTime)=
         let mutable dayTotal = (float 0)
         let mutable dayWithoutWeekend = (float 0)
         for d in userRequests do
-            if d.Start.Date.Year = DateTime.Today.Year &&  d.Start.Date.CompareTo(DateTime.Today) <= 0 then
+            if d.Start.Date.Year = today.Year &&  d.Start.Date.CompareTo(today) <= 0 then
                 dayWithoutWeekend <- getDayWithoutWeekend d.Start.Date d.End.Date
                 dayTotal <- dayTotal + dayWithoutWeekend - 2.0
                 if d.End.HalfDay = HalfDay.AM then
@@ -232,8 +232,8 @@ module Logic =
     let getAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) (date: DateTime)=   
         let portion = getTimeOffPortion date
         let carriedFromLastYear = 3.0   
-        let takenToDate = getNumberDayBeforeToday userRequests
-        let planned = getNumberDayAfterToday userRequests
+        let takenToDate = getNumberDayBeforeToday userRequests date
+        let planned = getNumberDayAfterToday userRequests date 
         let currentBalance = portion + carriedFromLastYear - (planned + takenToDate)
         Ok {UserId= userId; Portion= portion; CarriedFromLastYear = carriedFromLastYear; TakenToDate = takenToDate; Planned = planned; CurrentBalance = currentBalance}
     //TODO: Rename this method

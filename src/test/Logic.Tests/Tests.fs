@@ -233,7 +233,7 @@ let RequestGetTakeToDate =
       }
       let array = [|request1;request2;request3|]
       let sequence = array :> seq<TimeOffRequest>
-      Expect.equal (Logic.getNumberDayBeforeToday sequence) 2.0 "TakenToDate is ok"
+      Expect.equal (Logic.getNumberDayBeforeToday sequence (DateTime(2020, 01, 10))) 2.0 "TakenToDate is ok"
     }
   ]
     
@@ -265,7 +265,7 @@ let RequestGetPlanned =
       }
       let array = [|request1;request2;request3|]
       let sequence = array :> seq<TimeOffRequest>
-      Expect.equal (Logic.getNumberDayAfterToday sequence) 2.0 "planned is ok"
+      Expect.equal (Logic.getNumberDayAfterToday sequence (DateTime(2020, 01, 10))) 2.0 "planned is ok"
     }
   ]
     
