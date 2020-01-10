@@ -122,8 +122,7 @@ module HttpHandlers =
                 let u:UserId = userId
                 let result = handleGetAllRequests u
                 match result with
-                | Ok timeOffDay -> return! json timeOffDay next ctx
-                | Ok _ -> return! Successful.NO_CONTENT next ctx
+                | Ok requestHistory -> return! json requestHistory next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
             }
@@ -135,7 +134,6 @@ module HttpHandlers =
                 let result = handleGetAllTimeOff u
                 match result with
                 | Ok timeOffDay -> return! json timeOffDay next ctx
-                | Ok _ -> return! Successful.NO_CONTENT next ctx
                 | Error message ->
                     return! (BAD_REQUEST message) next ctx
             }

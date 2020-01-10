@@ -276,6 +276,6 @@ let RequestGetAllTimeOff =
       }
       let array = [|request1;request2|]
       let sequence = array :> seq<TimeOffRequest>
-      Expect.equal (Logic.getAllTimeOff request1.UserId sequence) (Ok {UserId= "jdoe"; Portion= 0.0; CarriedFromLastYear = 2.0; TakenToDate = 1.0; Planned = 1.0; CurrentBalance = 0.0}) "all timeoff is ok"
+      Expect.equal (Logic.getAllTimeOff request1.UserId sequence (DateTime(2020, 01, 10))) (Ok {UserId= "jdoe"; Portion= 0.0; CarriedFromLastYear = 2.0; TakenToDate = 1.0; Planned = 1.0; CurrentBalance = 0.0}) "all timeoff is ok"
     }
   ] 

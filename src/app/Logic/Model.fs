@@ -229,8 +229,8 @@ module Logic =
     let getTimeOffPortion (date : DateTime) =
         ((float date.Month) - 1.0) * 2.5
     
-    let getAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) =   
-        let portion = getTimeOffPortion DateTime.Today
+    let getAllTimeOff (userId : UserId) (userRequests : TimeOffRequest seq) (date: DateTime)=   
+        let portion = getTimeOffPortion date
         let carriedFromLastYear = 2.0   
         let takenToDate = getNumberDayBeforeToday userRequests
         let planned = getNumberDayAfterToday userRequests
@@ -248,7 +248,7 @@ module Logic =
                 |> Seq.map (fun (_, state) -> state)
                 |> Seq.where (fun state -> state.IsActive)
                 |> Seq.map (fun state -> state.Request)
-            getAllTimeOff userId activeUserRequests
+            getAllTimeOff userId activeUserRequests DateTime.Now
     let getAllRequests (user: User) (userId: UserId) (userRequests: List<TimeOffRequestHistory>) =
         match user with
         | Employee userId when userId <> userId ->
